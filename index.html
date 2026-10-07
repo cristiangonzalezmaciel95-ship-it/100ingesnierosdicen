@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070707">
+  <title>100 Ingenieros Dicen</title>
+  <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+  <style>
+    :root{
+      --bg:#070707; --panel:#111; --panel2:#171717; --red:#d71920; --red2:#ff3a40;
+      --white:#fff; --muted:#a8a8a8; --line:#2a2a2a; --green:#27d17f; --gold:#ffc84a;
+      --shadow:0 18px 50px rgba(0,0,0,.38);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:
+      radial-gradient(circle at top, #211010 0, var(--bg) 38%, #030303 100%);color:var(--white)}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .hidden{display:none!important}
+    .app{min-height:100vh}
+    .topbar{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);background:rgba(7,7,7,.88);border-bottom:1px solid var(--line)}
+    .topbar-inner{max-width:1450px;margin:auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.03em}
+    .brand-mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--red),#7c0e12);display:grid;place-items:center;font-size:20px;box-shadow:0 8px 25px rgba(215,25,32,.25)}
+    .brand-sub{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+    main{max-width:1450px;margin:0 auto;padding:24px 18px 60px}
+    .view{display:none}.view.active{display:block}
+    .hero{max-width:1000px;margin:7vh auto 0;text-align:center}
+    .hero h1{font-size:clamp(42px,8vw,86px);line-height:.93;margin:0 0 18px;font-weight:950;text-transform:uppercase;letter-spacing:-.05em}
+    .hero h1 span{color:var(--red2)}
+    .hero p{max-width:760px;margin:0 auto 28px;color:#d1d1d1;font-size:18px;line-height:1.55}
+    .mode-grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:18px;max-width:800px;margin:30px auto}
+    .mode-card{background:linear-gradient(180deg,#151515,#0c0c0c);border:1px solid var(--line);border-radius:22px;padding:28px;text-align:left;box-shadow:var(--shadow);transition:.18s}
+    .mode-card:hover{transform:translateY(-3px);border-color:#4b4b4b}
+    .mode-icon{font-size:42px}.mode-card h2{margin:12px 0 8px}.mode-card p{margin:0 0 18px;color:var(--muted);line-height:1.5}
+    .btn{border:1px solid #343434;background:#1a1a1a;color:#fff;border-radius:12px;padding:12px 16px;font-weight:850;transition:.15s}
+    .btn:hover{transform:translateY(-1px);border-color:#555}
+    .btn.primary{background:linear-gradient(135deg,var(--red),#aa0e13);border-color:transparent}
+    .btn.green{background:#143c2c;border-color:#236446;color:#c8ffe4}
+    .btn.gold{background:#4a3711;border-color:#8a681d;color:#ffe8a1}
+    .btn.danger{background:#3b1214;border-color:#70171b;color:#ffd1d2}
+    .btn.big{padding:17px 22px;font-size:17px}
+    .btn:disabled{opacity:.38;cursor:not-allowed;transform:none}
+    .back{margin-bottom:16px}
+    .shell{display:grid;grid-template-columns:330px 1fr;gap:18px;align-items:start}
+    .panel{background:linear-gradient(180deg,rgba(21,21,21,.98),rgba(12,12,12,.98));border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+    .panel-pad{padding:18px}
+    .panel h3{margin:0 0 12px}
+    .muted{color:var(--muted)}
+    .field{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+    .field label{font-size:12px;color:#bdbdbd;text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+    .field input,.field select{background:#0b0b0b;border:1px solid #323232;color:#fff;border-radius:10px;padding:12px}
+    .room-code{font-size:42px;font-weight:950;letter-spacing:.15em;text-align:center;padding:13px;border-radius:15px;background:#090909;border:1px dashed #5b1a1c;color:#ff6b70;margin:10px 0 14px}
+    .status{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:#0b0b0b;border:1px solid var(--line);font-weight:800}
+    .dot{width:10px;height:10px;border-radius:50%;background:#666}.dot.on{background:var(--green);box-shadow:0 0 12px rgba(39,209,127,.55)}
+    .team-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+    .team{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0b0b0b;border:1px solid #242424;padding:11px 12px;border-radius:11px}
+    .team-name{font-weight:900}.team-score{font-weight:950;color:#ff7478}.team-state{font-size:11px;color:var(--muted)}
+    .board{display:grid;gap:18px}
+    .score-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+    .score-card{padding:13px;border-radius:15px;background:#0d0d0d;border:1px solid var(--line);min-width:0}
+    .score-card.active{border-color:var(--red);box-shadow:0 0 0 1px rgba(215,25,32,.25) inset}
+    .score-name{font-size:12px;text-transform:uppercase;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .score-num{font-size:28px;font-weight:950;margin-top:3px}
+    .game-panel{padding:20px}
+    .round-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 11px;border-radius:999px;background:#0a0a0a;border:1px solid var(--line);font-size:12px;font-weight:900}
+    .question{font-size:clamp(28px,4vw,50px);line-height:1.05;font-weight:950;margin:22px 0 18px;max-width:1100px}
+    .subquestion{font-size:14px;color:var(--muted);margin-bottom:16px}
+    .buzz-stage{display:grid;place-items:center;min-height:180px;border:1px dashed #373737;border-radius:18px;background:
+      radial-gradient(circle at center, rgba(215,25,32,.12), transparent 50%),#090909}
+    .stage-title{font-size:18px;font-weight:900;text-align:center}.stage-big{font-size:42px;font-weight:950;color:#ff6b70;margin-top:8px}
+    .answer-grid{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:10px;margin-top:16px}
+    .answer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px;border-radius:13px;background:#0b0b0b;border:1px solid #2a2a2a}
+    .answer.revealed{border-color:#2e6449;background:#0b1711}
+    .answer .a-left{display:flex;gap:12px;align-items:center;min-width:0}.rank{width:30px;height:30px;border-radius:9px;background:#191919;display:grid;place-items:center;font-weight:950;color:#b8b8b8;flex:0 0 auto}
+    .a-text{font-weight:850;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.points{font-weight:950;color:#ffcf5c;flex:0 0 auto}
+    .answer-cover{font-weight:950;color:#777;letter-spacing:.12em}.answer button{padding:8px 11px}
+    .control-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+    .life-box{display:flex;gap:7px;margin-top:8px}.life{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:#3b1214;border:1px solid #75181d;color:#ff9b9e;font-weight:950}.life.empty{background:#141414;border-color:#2a2a2a;color:#515151}
+    .notice{padding:12px 14px;border-radius:12px;background:#130b0c;border:1px solid #361216;color:#ffb6b8;font-weight:800}
+    .mobile-view{max-width:900px;margin:0 auto}.mobile-card{min-height:calc(100vh - 130px);display:flex;flex-direction:column}
+    .player-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.player-team{font-size:14px;font-weight:900;color:#ff8084}.player-state{font-size:12px;color:var(--muted)}
+    .mobile-score-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px}.ms{background:#0c0c0c;border:1px solid var(--line);padding:9px 7px;border-radius:10px;text-align:center}.ms b{display:block;font-size:16px}.ms small{color:#999;font-size:9px}
+    .mobile-question{font-size:28px;font-weight:950;line-height:1.08;margin:16px 0 10px}.mobile-pot{font-size:18px;color:#ffcf5c;font-weight:950}
+    .buzzer-wrap{flex:1;display:grid;place-items:center;padding:16px 0}.buzzer{width:min(78vw,390px);aspect-ratio:1;border-radius:50%;border:0;color:#fff;font-size:40px;font-weight:950;background:radial-gradient(circle at 35% 30%,#ff7378 0,#e3272f 33%,#a80e14 72%,#71090d 100%);box-shadow:0 25px 60px rgba(215,25,32,.35), inset 0 -10px 20px rgba(0,0,0,.24);touch-action:manipulation}.buzzer.active{animation:pulse 1.1s infinite}.buzzer:disabled{background:radial-gradient(circle at 35% 30%,#424242,#232323 70%);box-shadow:none;color:#8a8a8a;animation:none}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+    .player-foot{display:flex;gap:9px;flex-wrap:wrap}.player-note{padding:12px;border-radius:12px;background:#0c0c0c;border:1px solid var(--line);font-size:13px;color:#c8c8c8}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:grid;place-items:center;padding:18px;z-index:50}.modal-box{max-width:700px;width:100%;background:#121212;border:1px solid #353535;border-radius:18px;box-shadow:var(--shadow);padding:22px}.modal-box h2{margin-top:0}
+    .toast{position:fixed;right:18px;bottom:18px;z-index:80;padding:12px 15px;border-radius:12px;background:#161616;border:1px solid #333;box-shadow:var(--shadow);font-weight:800}
+    .tiny{font-size:11px;color:#888}.row{display:flex;gap:9px;align-items:center}.between{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .rules{display:grid;gap:9px;color:#d2d2d2;line-height:1.5}.rules div{padding:11px 13px;background:#0d0d0d;border:1px solid var(--line);border-radius:11px}
+    .answer.wrong{border-color:#70171b;background:#1a0b0c}
+    .opts{display:grid;gap:10px;margin:14px 0}
+    .opt{display:flex;gap:12px;align-items:center;text-align:left;padding:16px;border-radius:14px;border:1px solid #3a3a3a;background:#161616;color:#fff;font-size:18px;font-weight:800;touch-action:manipulation}
+    .opt b{flex:0 0 34px;height:34px;border-radius:10px;background:#2a2a2a;display:grid;place-items:center}
+    .opt.good{background:#0f2a1c;border-color:#27d17f}.opt.bad{background:#2a1012;border-color:#d71920}
+    .opt:disabled:not(.good):not(.bad){opacity:.5}
+    .final{margin:16px 0}
+    .podium{display:flex;justify-content:center;align-items:flex-end;gap:10px;margin:10px 0 18px;min-height:260px}
+    .pod{flex:1;max-width:170px;text-align:center;animation:rise .8s both}
+    .pod-name{font-weight:950;font-size:15px;margin-bottom:4px}.pod-score{color:#ffcf5c;font-weight:950;margin-bottom:6px}
+    .pod-bar{border-radius:12px 12px 0 0;display:grid;place-items:center;font-size:34px;font-weight:950}
+    .p1 .pod-bar{background:linear-gradient(180deg,#ffc84a,#a67a14);color:#2a1d00}.p2 .pod-bar{background:linear-gradient(180deg,#d6d6d6,#7d7d7d);color:#222}.p3 .pod-bar{background:linear-gradient(180deg,#d98a4a,#8a4a1a);color:#2a1300}
+    .rank-table{width:100%;border-collapse:collapse;animation:rise .8s 3.8s both}
+    .rank-table th,.rank-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+    .rank-table th:last-child,.rank-table td:last-child{text-align:right;color:#ffcf5c;font-weight:950}
+    @keyframes rise{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+    .tbar{height:16px;border-radius:99px;background:#1b1b1b;border:1px solid #2c2c2c;overflow:hidden;margin:14px 0 4px}
+    .tfill{height:100%;width:100%;background:var(--green);transition:width .1s linear,background .3s}.tfill.mid{background:var(--gold)}.tfill.low{background:var(--red2)}
+    .tlab{font-weight:950;text-align:right;font-size:14px;color:#ccc}
+    .fx{position:fixed;inset:0;z-index:100;display:grid;place-items:center;pointer-events:none;overflow:hidden;animation:fxbg 2.4s both}
+    .fx.win{background:radial-gradient(circle,rgba(39,209,127,.35),transparent 70%)}.fx.lose{background:radial-gradient(circle,rgba(215,25,32,.4),transparent 70%)}
+    .fx-card{text-align:center;padding:24px 32px;border-radius:24px;background:rgba(10,10,10,.88);border:2px solid #444;animation:popin .5s cubic-bezier(.2,1.6,.4,1) both;max-width:90vw}
+    .fx.win .fx-card{border-color:var(--green)}.fx.lose .fx-card{border-color:var(--red);animation:popin .35s both,shake .5s .3s}
+    .fx-ic{font-size:72px}.fx-tt{font-size:26px;font-weight:950}.fx-sub{font-size:34px;font-weight:950;color:var(--gold);margin-top:6px}
+    .fx i{position:absolute;top:-20px;width:10px;height:16px;animation:fall 2.2s linear both}
+    @keyframes fxbg{0%{opacity:0}10%,80%{opacity:1}100%{opacity:0}}
+    @keyframes popin{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-14px)}40%{transform:translateX(12px)}60%{transform:translateX(-8px)}80%{transform:translateX(6px)}}
+    @keyframes fall{to{transform:translateY(105vh) rotate(540deg)}}
+    @keyframes bump{40%{transform:scale(1.12);border-color:var(--gold)}}.score-card.bump{animation:bump .6s}
+    @keyframes slideUp{from{opacity:0;transform:translateY(14px)}}.opt{animation:slideUp .3s both}.buzzer:active:not(:disabled){transform:scale(.93)}
+    @media(max-width:1050px){.shell{grid-template-columns:1fr}.score-strip{grid-template-columns:repeat(5,minmax(110px,1fr));overflow:auto}.score-strip .score-card{min-width:120px}.mode-grid{max-width:700px}}
+    @media(max-width:700px){main{padding:16px 12px 32px}.mode-grid{grid-template-columns:1fr}.hero{margin-top:4vh}.hero p{font-size:16px}.question{font-size:31px}.answer-grid{grid-template-columns:1fr}.score-strip{grid-template-columns:repeat(5,115px)}.mobile-score-grid{overflow:auto;grid-template-columns:repeat(5,100px)}.topbar-inner{padding:10px 12px}.brand-sub{display:none}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">100</div>
+        <div>
+          <div>INGENIEROS DICEN</div>
+          <div class="brand-sub">Juego interactivo · 5 equipos</div>
+        </div>
+      </div>
+      <button id="homeBtn" class="btn hidden" onclick="goHome()">Inicio</button>
+    </div>
+  </div>
+
+  <main>
+    <section id="homeView" class="view active">
+      <div class="hero">
+        <h1>100 <span>INGENIEROS</span><br>DICEN</h1>
+        <p>El tablero está en la laptop y cada participante usa su celular como pulsador. El primero en reaccionar gana el turno.</p>
+        <div class="mode-grid">
+          <div class="mode-card">
+            <div class="mode-icon">🖥️</div>
+            <h2>Tablero</h2>
+            <p>Crea una sala, controla preguntas, respuestas, vidas, robo de puntos y marcador.</p>
+            <button class="btn primary big" onclick="openHost()">Crear partida</button>
+          </div>
+          <div class="mode-card">
+            <div class="mode-icon">📱</div>
+            <h2>Participante</h2>
+            <p>Elige tu equipo, escribe el código de la sala y usa tu celular como pulsador.</p>
+            <button class="btn big" onclick="openPlayer()">Unirme a una sala</button>
+          </div>
+        </div>
+        <div class="panel panel-pad" style="max-width:800px;margin:22px auto 0;text-align:left">
+          <div class="rules">
+            <div><b>1.</b> Se lee la pregunta y nadie puede pulsar.</div>
+            <div><b>2.</b> El tablero activa los pulsadores; gana el primer toque.</div>
+            <div><b>3.</b> El equipo que gana el turno responde en su celular con 4 opciones (A–D). Cada error consume una vida.</div>
+            <div><b>4.</b> Con 3 errores se abre el robo: otro equipo pulsa y responde una pregunta de opción múltiple.</div>
+            <div><b>5.</b> Robo correcto = ese equipo se lleva el acumulado. Robo fallido = el equipo original lo conserva y quien robó pierde ese mismo acumulado (¡puede quedar en negativo!).</div>
+            <div><b>6.</b> Cada pregunta tiene tiempo límite: entre más rápido contestes, más puntos (50 a 150). Si se acaba el tiempo pierdes una vida. La última ronda vale doble. Al final: podio top 3 y tabla general.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="hostView" class="view">
+      <div class="back"><button class="btn" onclick="goHome()">← Volver</button></div>
+      <div id="hostLobby" class="panel panel-pad">
+        <div class="between">
+          <div>
+            <h2 style="margin:0 0 6px">Crear sala</h2>
+            <div class="muted">Abre esta pantalla en la laptop del tablero.</div>
+          </div>
+          <button class="btn primary big" onclick="createRoom()">Crear código</button>
+        </div>
+        <div id="hostRoomArea" class="hidden" style="margin-top:18px">
+          <div class="room-code" id="roomCode">-----</div>
+          <div class="status"><span id="hostDot" class="dot"></span><span id="hostStatus">Preparando conexión…</span></div>
+          <p class="muted">En cada celular seleccionen <b>Participante</b>, elijan su nombre e introduzcan este código.</p>
+          <div class="team-list" id="hostTeamList"></div>
+          <div class="settings" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+            <div class="field"><label>Número de rondas</label><select id="optRounds" onchange="applySettings()"><option value="5">5 rondas</option><option value="10">10 rondas</option></select></div>
+            <div class="field"><label>Tiempo por pregunta</label><select id="optTime" onchange="applySettings()"><option value="8">8 segundos</option><option value="12" selected>12 segundos</option><option value="15">15 segundos</option><option value="20">20 segundos</option></select></div>
+          </div>
+          <div style="margin-top:16px"><button class="btn green big" onclick="enterBoard()">Abrir tablero</button></div>
+        </div>
+      </div>
+
+      <div id="boardView" class="hidden" style="margin-top:18px">
+        <div class="shell">
+          <aside class="panel panel-pad">
+            <div class="between"><h3>Partida</h3><span id="boardConn" class="tiny">0 conectados</span></div>
+            <div class="room-code" style="font-size:30px" id="boardCode">-----</div>
+            <div class="team-list" id="boardTeams"></div>
+            <div style="margin-top:14px" class="tiny">Código de sala: los celulares se conectan directamente con el tablero.</div>
+            <div style="margin-top:14px;display:grid;gap:9px">
+              <button class="btn" onclick="copyRoomCode()">Copiar código</button>
+              <button class="btn danger" onclick="resetGame()">Reiniciar partida</button>
+            </div>
+          </aside>
+
+          <section class="board">
+            <div class="score-strip" id="scoreStrip"></div>
+            <div class="panel game-panel">
+              <div class="round-meta">
+                <div class="row">
+                  <span class="pill" id="roundPill">Pregunta 1 / 10</span>
+                  <span class="pill" id="phasePill">Esperando</span>
+                </div>
+                <div class="pill">Acumulado: <span id="potValue">0</span> pts</div>
+              </div>
+              <div class="question" id="boardQuestion">Pulsa “Siguiente pregunta” para comenzar.</div>
+              <div class="subquestion" id="boardHint">Lee la pregunta en voz alta antes de activar los pulsadores.</div>
+
+              <div id="buzzStage" class="buzz-stage">
+                <div style="text-align:center">
+                  <div class="stage-title" id="stageTitle">Sala lista</div>
+                  <div class="stage-big" id="stageBig">ESPERANDO</div>
+                </div>
+              </div>
+
+              <div id="turnBox" class="between" style="margin-top:14px;align-items:flex-start">
+                <div>
+                  <div class="tiny">Equipo en turno</div>
+                  <div style="font-size:25px;font-weight:950" id="activeTeam">—</div>
+                  <div class="life-box" id="lifeBox"></div>
+                </div>
+                <div id="stealBox" class="hidden" style="text-align:right">
+                  <div class="tiny">Robo</div>
+                  <div style="font-size:18px;font-weight:950" id="stealTeam">—</div>
+                </div>
+              </div>
+
+              <div id="tbarH" class="hidden"><div class="tbar"><div id="tfillH" class="tfill"></div></div><div class="tlab" id="tlabH"></div></div>
+
+              <div class="answer-grid" id="answerGrid"></div>
+
+              <div id="finalBox" class="final hidden"></div>
+
+              <div class="control-grid">
+                <button id="btnNext" class="btn primary big" onclick="nextQuestion()">Siguiente ronda</button>
+                <button id="btnBuzz" class="btn gold big" onclick="enableBuzzers()">Activar pulsadores</button>
+                <button id="btnSkip" class="btn danger big" style="grid-column:1/-1" onclick="skipTurn()">Seguir</button>
+                <button id="btnContinue" class="btn green big" style="grid-column:1/-1" onclick="continueGame()">Continuar ▶</button>
+              </div>
+
+              <div class="notice" id="boardNotice" style="margin-top:14px">Primero inicia una pregunta.</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section id="playerView" class="view">
+      <div class="mobile-view">
+        <div id="playerSetup" class="panel panel-pad">
+          <div class="back"><button class="btn" onclick="goHome()">← Volver</button></div>
+          <h2 style="margin:0 0 7px">Unirme a la partida</h2>
+          <p class="muted">Selecciona tu nombre/equipo y escribe el código mostrado en la laptop.</p>
+          <div id="codeStep">
+            <div class="field">
+              <label>Código de sala</label>
+              <input id="playerCode" maxlength="5" placeholder="ABCDE" inputmode="text" autocomplete="off">
+            </div>
+            <button class="btn primary big" style="width:100%" onclick="joinRoom()">Conectar con la sala</button>
+          </div>
+          <div id="teamPicker" class="hidden">
+            <p class="muted">Elige tu equipo. Los equipos ocupados aparecen deshabilitados.</p>
+            <div id="teamPickBtns" class="opts"></div>
+          </div>
+          <div id="playerConnectMsg" class="notice hidden" style="margin-top:12px"></div>
+        </div>
+
+        <div id="mobileGame" class="panel panel-pad hidden mobile-card">
+          <div class="player-head">
+            <div>
+              <div class="player-team" id="playerTeamLabel">—</div>
+              <div class="player-state" id="playerState">Conectado</div>
+            </div>
+            <button class="btn" onclick="leaveRoom()">Salir</button>
+          </div>
+          <div class="mobile-score-grid" id="mobileScoreGrid"></div>
+          <div class="pill" id="mobilePhase">Esperando</div>
+          <div class="mobile-question" id="mobileQuestion">Esperando pregunta…</div>
+          <div class="mobile-pot" id="mPotLine">Acumulado: <span id="mobilePot">0</span> pts</div>
+          <div class="buzzer-wrap" id="buzzWrap">
+            <button id="buzzer" class="buzzer" disabled ontouchstart="" onclick="buzz()">PULSAR</button>
+          </div>
+          <div id="tbarM" class="hidden"><div class="tbar"><div id="tfillM" class="tfill"></div></div><div class="tlab" id="tlabM"></div></div>
+          <div id="mFinal" class="final hidden"></div>
+          <div id="optBox" class="opts hidden"></div>
+          <div class="player-foot">
+            <div class="player-note" id="playerNotice">El tablero aún no ha activado los pulsadores.</div>
+            <div class="player-note">Solo pulsa cuando la laptop lo indique.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+</div>
+
+<script>
+"use strict";
+
+const TEAM_NAMES = ["Equipo 1","Equipo 2","Equipo 3","Equipo 4","Equipo 5"];
+
+const PTS = 50, BONUS = 100; // acierto = base + bonus según rapidez (más rápido = más puntos). Robo fallido: se pierde el acumulado
+function mult(){ return game.round===N()-1 ? 2 : 1; } // la última ronda vale doble
+// Formato: [pregunta, [4 opciones], índice de la correcta (0=A,1=B,2=C,3=D)]
+const RAW = [
+ {t:"Criterios", q:[
+  ["¿Cómo se llama la pérdida de señal conforme aumenta la distancia?",["Latencia","Multiplexación","Atenuación","Encapsulamiento"],2],
+  ["¿Qué enunciado es correcto al elegir un medio de transmisión?",["Hay un medio mejor para todos los casos","Depende de las necesidades de la red y del lugar","Siempre conviene el más caro","Siempre conviene el inalámbrico"],1],
+  ["Si el número de usuarios puede crecer, ¿qué conviene considerar?",["Que la red no se pueda ampliar","Solo el costo inicial","Eliminar la seguridad","La posibilidad de ampliar la red"],3],
+  ["¿Qué puede afectar a un medio en un lugar con motores y maquinaria?",["Interferencia electromagnética","Exceso de contraseñas","El color del cable","La marca del router"],0],
+  ["¿Por qué una red troncal exige más que una conexión para pocos dispositivos?",["Porque usa menos datos","Porque necesita mucha más capacidad","Porque no requiere cables","Porque la velocidad no importa"],1]]},
+ {t:"Redes locales", q:[
+  ["¿Qué opciones se mencionan principalmente para una red local?",["Satélite GEO y coaxial","Fibra monomodo y microondas","UTP Cat 6/6a y Wi‑Fi","Infrarrojo y NFC"],2],
+  ["¿Hasta qué distancia aproximada se maneja el cobre UTP en una LAN típica?",["10 metros","100 metros","1 kilómetro","40 kilómetros"],1],
+  ["¿Cuál es la principal ventaja de Wi‑Fi en una LAN?",["Movilidad","Cero interferencia","Mayor alcance que la fibra","No se satura nunca"],0],
+  ["En una oficina pequeña, ¿qué reparto es más lógico?",["Todo por Wi‑Fi","Todo por coaxial","UTP para servidores y PC fijas; Wi‑Fi para laptops y celulares","Solo satélite"],2],
+  ["¿Qué puede causar depender solo de un Wi‑Fi saturado?",["Mayor distancia máxima","Inmunidad a la interferencia","Cableado más ordenado","Inestabilidad y menor rendimiento"],3]]},
+ {t:"Backbone", q:[
+  ["¿Qué es un backbone?",["Un tipo de conector","La parte de la red que conecta otras redes o grandes puntos","Un cable para impresoras","Un protocolo de correo"],1],
+  ["¿Qué medio destaca para un backbone de larga distancia?",["Fibra monomodo","UTP Cat 6","Infrarrojo","Bluetooth"],0],
+  ["¿Qué atenuación aproximada se cita para fibra monomodo a 1550 nm?",["2 dB/km","0.2 dB/km","20 dB/km","200 dB/km"],1],
+  ["¿Dónde se usa normalmente la fibra multimodo?",["Entre continentes","En enlaces de decenas de kilómetros","En distancias menores: edificios y centros de datos","Solo en televisión por cable"],2],
+  ["Según la UIT, ¿qué parte de los flujos internacionales de datos pasa por cables submarinos?",["Más del 99 %","Alrededor del 50 %","Menos del 10 %","Exactamente 25 %"],0]]},
+ {t:"Zonas remotas", q:[
+  ["¿Qué ventaja tiene el satélite LEO frente al GEO?",["Está más lejos de la Tierra","Menor latencia","Es inmune al clima","No necesita antenas"],1],
+  ["¿Qué necesita un enlace de microondas punto a punto?",["Línea de vista","Cableado enterrado","Fibra monomodo","Un switch en cada extremo"],0],
+  ["Tras un huracán o sismo, ¿qué puede mantener comunicación operativa?",["Cables UTP largos","Redes de radio","Coaxial doméstico","Infrarrojo"],1],
+  ["En una comunidad rural sin fibra cercana, ¿qué opciones son más razonables?",["UTP de 40 km","Solo Bluetooth","Satélite LEO o microondas","NFC"],2],
+  ["¿Qué desventaja del satélite se mencionó?",["Solo funciona en interiores","Nunca tiene latencia","Exige cables de cobre","Puede verse afectado por el clima"],3]]},
+ {t:"Entornos especiales", q:[
+  ["¿Qué medio conviene en una fábrica con mucha interferencia electromagnética?",["UTP sin blindaje","Fibra óptica","Wi‑Fi","Infrarrojo"],1],
+  ["¿Para qué se usa NFC?",["Enlaces de 40 km","Pagos a muy corta distancia","Backbone","Cables submarinos"],1],
+  ["¿Qué tecnología requiere línea de vista, como ciertos controles remotos?",["Bluetooth","NFC","Fibra","Infrarrojo"],3],
+  ["¿Qué es una arquitectura híbrida común?",["Solo Wi‑Fi","Solo UTP","Fibra hasta el edificio, UTP en los pisos y Wi‑Fi para usuarios","Solo satélite"],2],
+  ["¿Qué puede provocar una mala elección del medio?",["Más errores, retransmisiones y costos innecesarios","Menos costo siempre","Seguridad automática","Nada: todos son iguales"],0]]},
+ {t:"Repaso: criterios y LAN", q:[
+  ["Para computadoras, servidores e impresoras de una oficina conviene…",["Wi‑Fi únicamente","Cable UTP","Satélite","Infrarrojo"],1],
+  ["¿Qué ordena una instalación de red y facilita ampliarla?",["Cableado estructurado","Cables sueltos","Un solo cable largo","Repetidores sin plan"],0],
+  ["Un cable de cobre demasiado largo sin solución adecuada provoca…",["Más velocidad","Problemas de señal y errores","Más seguridad","Menos atenuación"],1],
+  ["Además de velocidad y distancia, ¿qué otro criterio se considera?",["El color del equipo","El nombre de la red","El costo","La marca del cable"],2],
+  ["Para laptops y celulares en una oficina conviene…",["Fibra monomodo","UTP Cat 6","Wi‑Fi","Coaxial"],2]]},
+ {t:"Repaso: backbone", q:[
+  ["¿Qué une un backbone?",["Una impresora y una PC","Ciudades o grandes puntos de una red","Dos celulares","Un mouse y un teclado"],1],
+  ["¿Qué sistema submarino conecta EE. UU. y España?",["MAREA","SMF‑28","STP","LEO"],0],
+  ["¿Qué longitud aproximada tiene ese cable?",["660 km","6,600 km","66 km","66,000 km"],1],
+  ["¿Qué medio ya no es la opción principal para troncales de larga distancia?",["Fibra monomodo","Coaxial","Fibra submarina","Cable óptico"],1],
+  ["Un enlace de 40 km con UTP es…",["Una solución realista","Lo ideal para backbone","Poco realista","Más barato y mejor"],2]]},
+ {t:"Repaso: zonas remotas", q:[
+  ["¿Qué ventaja tiene la radio?",["Sirve en emergencias y comunicación operativa","Alcanza 200 Tbps","Elimina el efecto del clima","No necesita equipos"],0],
+  ["¿Para qué sirve el microondas punto a punto?",["Conectar auriculares","Pagos con NFC","Solo televisión","Unir dos sitios cuando tender fibra no es práctico"],3],
+  ["¿Qué aplicación aprovecha la baja latencia del satélite LEO?",["Respaldos nocturnos","Videollamadas y videojuegos","Impresión","Control remoto de TV"],1],
+  ["En zonas remotas, ¿qué se busca principalmente?",["El medio más rápido a cualquier costo","Cobertura y comunicación viables","El cable más grueso","El medio más antiguo"],1],
+  ["¿Qué debe considerar cualquier solución inalámbrica?",["Que no usa energía","Que no tiene alcance","La seguridad de la comunicación","Que es inmune a todo"],2]]},
+ {t:"Repaso: entornos especiales", q:[
+  ["Además de la fibra, ¿qué cable puede usarse con interferencia?",["UTP sin blindaje","STP o FTP","Cable telefónico","Coaxial viejo"],1],
+  ["¿Qué tecnología sirve para dispositivos cercanos como audífonos?",["Bluetooth","Fibra","Microondas","Satélite"],0],
+  ["Un sensor IoT necesita normalmente…",["Mucha energía","Poca energía y buena cobertura","Cable coaxial","Línea de vista siempre"],1],
+  ["¿Por qué importa la interferencia en hospitales?",["Solo afecta la televisión","No importa","Los pacientes usan fibra","Hay equipos y sistemas que deben funcionar bien"],3],
+  ["En televisión por cable, el coaxial sigue siendo útil porque…",["Es el más rápido","Es inalámbrico","Ya existe infraestructura instalada","No tiene atenuación"],2]]},
+ {t:"Repaso final", q:[
+  ["La idea central de la exposición es…",["Existe un medio perfecto","Elegir según el escenario, no el más potente","Usar siempre fibra","Usar siempre Wi‑Fi"],1],
+  ["Para una LAN, una buena combinación es…",["UTP Cat 6/6a + Wi‑Fi","Satélite + coaxial","Microondas + infrarrojo","NFC + Bluetooth"],0],
+  ["Para backbone de larga distancia destaca…",["UTP","Bluetooth","Fibra multimodo","Fibra monomodo"],3],
+  ["Para corto alcance conviene…",["Fibra monomodo","Microondas","NFC o Bluetooth","Satélite GEO"],2],
+  ["Una red real casi siempre usa…",["Un solo medio","Varios medios combinados","Solo cable","Solo radio"],1]]}
+];
+const ROUNDS = RAW.map(r=>({t:r.t, qs:r.q.map(x=>({q:x[0],o:x[1],c:x[2]}))}));
+
+let totalRounds = 5, timeLimit = 12; // se cambian en el lobby del tablero
+let peer = null;
+let hostConn = null;
+let hostPeerId = null;
+let roomCode = "";
+let hostConnections = new Map();
+
+let teams = TEAM_NAMES.map((name,i)=>({id:i,name,score:0,connected:false}));
+let game = freshGame();
+let lastStateSignature = "";
+
+let playerTeamId = null;
+let playerConn = null;
+
+function freshGame(){
+  return { round:-1, qi:0, phase:"IDLE", total:totalRounds, limit:timeLimit*1000, // IDLE, READ, BUZZ, ANSWER, RESULT, STEAL_READ, STEAL_BUZZ, STEAL_ANSWER, ENDED
+    activeTeam:null, stealTeam:null, strikes:0, answered:0, pot:0, last:null, after:null,
+    message:"Pulsa “Siguiente ronda” para comenzar." };
+}
+function ranking(){
+  const o=[...teams].sort((a,b)=>b.score-a.score||a.id-b.id); let r=0;
+  return o.map((t,i)=>{ if(i===0||t.score!==o[i-1].score) r=i+1; return {...t,rank:r}; });
+}
+function finalHtml(){
+  const R=ranking(), top=R.slice(0,3), delay=[2.6,1.4,0.3], hgt=[200,150,110];
+  const pod=[1,0,2].filter(i=>top[i]).map(i=>`<div class="pod p${i+1}" style="animation-delay:${delay[i]}s"><div class="pod-name">${escapeHtml(top[i].name)}</div><div class="pod-score">${top[i].score} pts</div><div class="pod-bar" style="height:${hgt[i]}px">${top[i].rank}</div></div>`).join("");
+  const rows=R.map(t=>`<tr><td>${t.rank}</td><td>${escapeHtml(t.name)}</td><td>${t.score}</td></tr>`).join("");
+  return `<div class="podium">${pod}</div><table class="rank-table"><thead><tr><th>#</th><th>Equipo</th><th>Puntos</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function setFinal(el,html){ if(el.dataset.sig!==html){ el.innerHTML=html; el.dataset.sig=html; } }
+function N(){ return game.total||5; }
+function startClock(){ game.t0=Date.now(); game.limit=timeLimit*1000; }
+function applySettings(){
+  totalRounds=Number(qs("optRounds").value); timeLimit=Number(qs("optTime").value);
+  if(game.phase==="IDLE"){ game.total=totalRounds; game.limit=timeLimit*1000; }
+}
+let fxH="", fxM="", localT0=0, seenT0=null;
+function syncClock(){ if(game.t0!==seenT0){ seenT0=game.t0; localT0=performance.now()-(game.el||0); } }
+function setBar(k,on,frac,secs){
+  qs("tbar"+k).classList.toggle("hidden",!on); if(!on) return;
+  const f=qs("tfill"+k); f.style.width=(frac*100)+"%"; f.className="tfill"+(frac<.33?" low":frac<.66?" mid":"");
+  qs("tlab"+k).textContent=secs+" s";
+}
+function tickBars(){
+  const ph=game.phase, on=(ph==="ANSWER"||ph==="STEAL_ANSWER")&&game.limit>0, host=!!roomCode;
+  let el=0; if(on) el=host?Date.now()-game.t0:performance.now()-localT0;
+  const frac=on?Math.max(0,1-el/game.limit):0, secs=Math.ceil(frac*game.limit/1000);
+  setBar("H",on&&host,frac,secs); setBar("M",on&&!host,frac,secs);
+  if(host&&on&&el>=game.limit+300) handlePick({teamId:ph==="ANSWER"?game.activeTeam:game.stealTeam},-1);
+}
+function playFx(L,host){
+  let cls,ic,tt,sub="";
+  if(L.stealing){
+    if(L.ok){cls="win";ic="🏴‍☠️";tt="¡ROBO EXITOSO!";sub="+"+L.amt+" pts";}
+    else{cls="lose";ic=L.to?"⏰":"💥";tt=L.to?"¡SE ACABÓ EL TIEMPO!":"ROBO FALLIDO";sub="−"+L.amt+" pts";}
+  }else if(L.ok){ cls="win"; const f=L.frac; ic=f>.66?"⚡":f>.33?"🔥":"👍"; tt=f>.66?"¡RAPIDÍSIMO!":f>.33?"¡MUY BIEN!":"¡JUSTO A TIEMPO!"; sub="+"+L.gain+" pts"; }
+  else{ cls="lose"; ic=L.to?"⏰":"💔"; tt=L.to?"¡SE ACABÓ EL TIEMPO!":"INCORRECTO"; sub="−1 vida"; }
+  let conf=""; if(cls==="win") for(let k=0;k<28;k++) conf+=`<i style="left:${Math.random()*100}%;background:hsl(${Math.random()*360},90%,60%);animation-delay:${Math.random()*.6}s"></i>`;
+  const d=document.createElement("div"); d.className="fx "+cls;
+  d.innerHTML=`${conf}<div class="fx-card"><div class="fx-ic">${ic}</div><div class="fx-tt">${host?escapeHtml(teamName(L.team))+" · ":""}${tt}</div><div class="fx-sub">${sub}</div></div>`;
+  document.body.appendChild(d); setTimeout(()=>d.remove(),2400);
+  try{ if(!host&&navigator.vibrate) navigator.vibrate(cls==="win"?60:[120,60,120]); }catch(e){}
+}
+function curQ(){ const r=ROUNDS[game.round]; return r ? r.qs[game.qi] : null; }
+
+function teamName(id){ return id == null ? "—" : (teams[id]?.name || "—"); }
+
+function qs(id){ return document.getElementById(id); }
+function showView(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  qs(id).classList.add("active");
+  qs("homeBtn").classList.toggle("hidden", id==="homeView");
+}
+function goHome(){
+  if(peer) try{ peer.destroy(); }catch(e){}
+  peer=null; hostConn=null; hostConnections.clear(); playerConn=null; playerTeamId=null; roomCode="";
+  teams = TEAM_NAMES.map((name,i)=>({id:i,name,score:0,connected:false}));
+  game=freshGame();
+  qs("hostRoomArea").classList.add("hidden");
+  qs("boardView").classList.add("hidden");
+  qs("playerSetup").classList.remove("hidden"); qs("codeStep").classList.remove("hidden"); qs("teamPicker").classList.add("hidden");
+  clearInterval(pingTimer); clearInterval(hostTimer);
+  qs("mobileGame").classList.add("hidden");
+  showView("homeView");
+}
+function openHost(){ showView("hostView"); qs("hostLobby").classList.remove("hidden"); }
+function openPlayer(){ resetPlayerUI(""); showView("playerView"); }
+function randomCode(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s="";
+  for(let i=0;i<5;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+function cleanCode(v){return String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,5);}
+function peerIdFor(code){return "ing-dicen-"+code.toLowerCase();}
+
+function createRoom(){
+  if(peer) try{peer.destroy()}catch(e){}
+  roomCode=randomCode();
+  hostPeerId=peerIdFor(roomCode);
+  qs("hostRoomArea").classList.remove("hidden");
+  qs("roomCode").textContent=roomCode;
+  qs("boardCode").textContent=roomCode;
+  qs("hostStatus").textContent="Conectando…";
+  qs("hostDot").classList.remove("on");
+  renderHostTeams();
+
+  peer = new Peer(hostPeerId,{debug:0,host:'0.peerjs.com',port:443,path:'/',secure:location.protocol==='https:'});
+  peer.on("open", ()=>{
+    qs("hostStatus").textContent="Sala lista. Esperando participantes.";
+    qs("hostDot").classList.add("on");
+    toast("Sala "+roomCode+" creada.");
+  });
+  peer.on("connection", conn=>{
+    conn.on("open", ()=>{
+      conn.last=Date.now();
+      hostConnections.set(conn.peer, conn);
+      conn.on("data", data=>{ conn.last=Date.now(); handleHostMessage(conn,data); });
+      conn.on("close", ()=>dropConn(conn));
+      conn.on("error", ()=>dropConn(conn));
+      conn.send({type:"state",teams,game});
+    });
+  });
+  clearInterval(hostTimer);
+  hostTimer=setInterval(()=>{ hostConnections.forEach(c=>{ if(Date.now()-c.last>15000) dropConn(c); }); },3000);
+  peer.on("error", err=>{
+    if(err.type==="unavailable-id"){ toast("Código ocupado, se generará otro."); setTimeout(createRoom,300); return; }
+    qs("hostStatus").textContent="Error de conexión: "+(err.type||"desconocido");
+    toast("No se pudo abrir la sala.");
+  });
+}
+
+let hostTimer=null;
+function dropConn(conn){
+  if(hostConnections.get(conn.peer)!==conn) return;
+  hostConnections.delete(conn.peer);
+  if(conn.teamId!==undefined && teams[conn.teamId]) teams[conn.teamId].connected=false;
+  try{conn.close()}catch(e){}
+  renderAllHost(); broadcastState();
+}
+function handleHostMessage(conn,data){
+  if(!data||typeof data!=="object") return;
+  if(data.type==="join"){
+    if(conn.teamId!==undefined) return;
+    const id=Number(data.teamId);
+    if(!Number.isInteger(id)||id<0||id>=teams.length) return;
+    if(teams[id].connected){
+      conn.send({type:"joinDenied",reason:"Ese equipo ya fue elegido. Elige otro."});
+      conn.send({type:"state",teams,game}); return;
+    }
+    conn.teamId=id; teams[id].connected=true;
+    conn.send({type:"joinAccepted",teamId:id,teams,game});
+    renderAllHost(); broadcastState(); return;
+  }
+  if(data.type==="buzz"){ handleBuzz(conn); return; }
+  if(data.type==="pick"){ if(Number(data.i)>=0) handlePick(conn,data.i); return; }
+}
+
+function handleBuzz(conn){
+  const t=Number(conn.teamId); if(!Number.isInteger(t)) return;
+  if(game.phase==="BUZZ"){
+    game.activeTeam=t; game.phase="ANSWER"; startClock();
+    game.message=teamName(t)+" gana el turno. Debe elegir una opción en su celular.";
+  }else if(game.phase==="STEAL_BUZZ" && t!==game.activeTeam){
+    game.stealTeam=t; game.phase="STEAL_ANSWER"; startClock();
+    game.message=teamName(t)+" intenta el robo. Debe elegir una opción en su celular.";
+  }else return;
+  broadcastState(); renderAllHost(); toast(game.message);
+}
+function handlePick(conn,i){
+  const t=Number(conn.teamId); i=Number(i); const q=curQ(), ph=game.phase, to=(i===-1);
+  if(!q || !(i>=-1 && i<4)) return;
+  if(!((ph==="ANSWER"&&t===game.activeTeam)||(ph==="STEAL_ANSWER"&&t===game.stealTeam))) return;
+  const ok=(i===q.c), a=game.activeTeam, n=teamName; let gain=0, frac=0, amt=0;
+  if(ph==="ANSWER"){
+    game.answered++;
+    let msg;
+    if(ok){
+      frac=Math.max(0,1-(Date.now()-(game.t0||Date.now()))/game.limit);
+      gain=(PTS+Math.round(BONUS*frac))*mult(); game.pot+=gain; msg=`¡Correcto! +${gain} pts (acumulado ${game.pot}).`;
+    }else{ game.strikes++; msg=(to?"¡Se acabó el tiempo! ":"Error. ")+`Vidas restantes: ${3-game.strikes}.`; }
+    if(game.strikes>=3){ game.after="STEAL"; game.message=`${n(t)} cometió su 3.er error. Se abre el robo de ${game.pot} pts.`; }
+    else if(game.answered>=4){ teams[a].score+=game.pot; game.after="END"; game.message=`${msg} ${n(a)} terminó la ronda y suma ${game.pot} pts.`; }
+    else { game.after="NEXT"; game.message=msg; }
+  }else{
+    game.after="END"; amt=game.pot;
+    if(ok){ teams[t].score+=game.pot; game.message=`Robo correcto: ${n(t)} se lleva ${game.pot} pts.`; }
+    else{
+      teams[t].score-=game.pot; teams[a].score+=game.pot;
+      game.message=`${to?"Se acabó el tiempo. ":""}Robo fallido: ${n(a)} conserva ${game.pot} pts y ${n(t)} pierde ${game.pot} pts.`;
+    }
+  }
+  game.last={team:t,pick:i,ok,c:q.c,gain,frac,to,amt,stealing:ph==="STEAL_ANSWER"};
+  game.phase="RESULT"; broadcastState(); renderAllHost();
+}
+
+function broadcastState(){
+  game.el=game.t0?Date.now()-game.t0:0;
+  const packet={type:"state",teams,game};
+  hostConnections.forEach(c=>{
+    if(c.open) try{ c.send(packet); }catch(e){}
+  });
+}
+
+function openBoard(){
+  qs("hostLobby").classList.add("hidden");
+  qs("boardView").classList.remove("hidden");
+  renderAllHost();
+}
+function enterBoard(){ openBoard(); }
+
+function renderHostTeams(){
+  const html=teams.map(t=>`
+    <div class="team">
+      <div><div class="team-name">${escapeHtml(t.name)}</div><div class="team-state">${t.connected?"Conectado":"Esperando celular"}</div></div>
+      <div class="team-score">${t.score}</div>
+    </div>`).join("");
+  qs("hostTeamList").innerHTML=html;
+  qs("boardTeams").innerHTML=html;
+  qs("boardConn").textContent=teams.filter(t=>t.connected).length+" conectados";
+}
+let lastScores=[];
+function renderScoreStrip(){
+  qs("scoreStrip").innerHTML=teams.map(t=>`<div class="score-card ${game.activeTeam===t.id?"active":""} ${lastScores.length&&lastScores[t.id]!==t.score?"bump":""}"><div class="score-name">${escapeHtml(t.name)}</div><div class="score-num">${t.score}</div></div>`).join("");
+  lastScores=teams.map(t=>t.score);
+}
+function renderBoard(){
+  const r=ROUNDS[game.round], q=curQ(), ph=game.phase, L=game.last;
+  qs("roundPill").textContent = r ? `Ronda ${game.round+1}/${N()} · ${r.t}${game.round===N()-1?" · ×2 puntos":""}` : `Ronda — / ${N()}`;
+  const names={FINAL:"Resultados finales",IDLE:"Esperando",READ:"Leyendo",BUZZ:"Pulsadores activos",ANSWER:"Respondiendo",RESULT:"Resultado",STEAL_READ:"Robo: leyendo",STEAL_BUZZ:"Robo abierto",STEAL_ANSWER:"Robo: respondiendo",ENDED:"Ronda terminada"};
+  qs("phasePill").textContent=names[ph]||ph;
+  qs("potValue").textContent=game.pot;
+  qs("activeTeam").textContent=teamName(game.activeTeam);
+  qs("stealBox").classList.toggle("hidden",game.stealTeam===null);
+  qs("stealTeam").textContent=teamName(game.stealTeam);
+  qs("lifeBox").innerHTML=[0,1,2].map(i=>`<div class="life ${i<game.strikes?"":"empty"}">${i<game.strikes?"X":"♥"}</div>`).join("");
+  const show=q && ph!=="IDLE" && ph!=="ENDED";
+  qs("boardQuestion").textContent = show ? q.q : "Pulsa “Siguiente ronda” para continuar.";
+  qs("boardHint").textContent = show ? ({READ:"Lee la pregunta y las opciones en voz alta. Nadie puede pulsar todavía.",STEAL_READ:"Lee la pregunta de robo. Nadie puede pulsar todavía.",BUZZ:"Ahora sí: el primero que pulse gana el turno.",STEAL_BUZZ:"Los demás equipos pueden pulsar para robar.",ANSWER:"El equipo en turno elige en su celular.",STEAL_ANSWER:"El equipo que roba elige en su celular.",RESULT:"Revisa el resultado y pulsa Continuar."}[ph]||"") : "Lee la pregunta antes de activar los pulsadores.";
+  qs("answerGrid").innerHTML = show ? q.o.map((x,i)=>{
+    const cls = ph==="RESULT" ? (i===q.c?"revealed":(L&&i===L.pick?"wrong":"")) : "";
+    return `<div class="answer ${cls}"><div class="a-left"><div class="rank">${"ABCD"[i]}</div><div class="a-text" style="white-space:normal">${escapeHtml(x)}</div></div></div>`;
+  }).join("") : "";
+  const S={READ:["LEE LA PREGUNTA","SIN PULSAR"],BUZZ:["PULSADORES HABILITADOS","¡AHORA!"],ANSWER:[teamName(game.activeTeam),"ELIGE A–D"],
+    RESULT:[L?teamName(L.team):"",L&&L.ok?"¡CORRECTO!":"INCORRECTO"],STEAL_READ:["OPORTUNIDAD DE ROBO","LEE LA PREGUNTA"],
+    STEAL_BUZZ:["OPORTUNIDAD DE ROBO","¡ROBEN!"],STEAL_ANSWER:[teamName(game.stealTeam),"ELIGE A–D"],ENDED:["RONDA TERMINADA","SIGUIENTE"]}[ph]||["SALA LISTA","ESPERANDO"];
+  qs("stageTitle").textContent=S[0]; qs("stageBig").textContent=S[1];
+  qs("btnNext").disabled=!(ph==="IDLE"||ph==="ENDED");
+  qs("btnBuzz").disabled=!(ph==="READ"||ph==="STEAL_READ");
+  qs("btnContinue").disabled=ph!=="RESULT";
+  const sk={BUZZ:"Nadie pulsa: saltar pregunta",STEAL_BUZZ:"Nadie roba: seguir adelante",ANSWER:"Sin respuesta (cuenta como error)",STEAL_ANSWER:"Sin respuesta (robo fallido)"}[ph];
+  qs("btnSkip").disabled=!sk; qs("btnSkip").textContent=sk||"Seguir adelante";
+  qs("boardNotice").textContent=game.message;
+  const fin=ph==="FINAL";
+  ["boardQuestion","boardHint","buzzStage","answerGrid","turnBox","btnBuzz","btnContinue","btnSkip"].forEach(id=>qs(id).classList.toggle("hidden",fin));
+  qs("finalBox").classList.toggle("hidden",!fin);
+  if(fin){ setFinal(qs("finalBox"),finalHtml()); qs("btnNext").disabled=true; } else qs("finalBox").dataset.sig="";
+  qs("btnNext").textContent=(ph==="ENDED"&&game.round===N()-1)?"Ver resultados finales":"Siguiente ronda";
+  const kH=game.round+"/"+game.qi+"/"+(L?L.team+":"+L.pick:"");
+  if(ph==="RESULT"&&L){ if(fxH!==kH){ fxH=kH; playFx(L,true); } } else fxH="";
+}
+function renderAllHost(){ renderHostTeams(); renderScoreStrip(); renderBoard(); }
+
+function nextQuestion(){
+  if(game.phase!=="IDLE" && game.phase!=="ENDED") return;
+  const r=game.round+1;
+  if(r>=N()){ game.phase="FINAL"; game.message="¡Fin de la partida!"; broadcastState(); renderAllHost(); return; }
+  game=freshGame(); game.round=r; game.phase="READ";
+  game.message="Lee la pregunta. Nadie puede pulsar todavía.";
+  broadcastState(); renderAllHost();
+}
+function enableBuzzers(){
+  if(game.phase==="READ") game.phase="BUZZ";
+  else if(game.phase==="STEAL_READ") game.phase="STEAL_BUZZ";
+  else return;
+  game.message="Pulsadores habilitados. El primero que toque gana.";
+  broadcastState(); renderAllHost();
+}
+function skipTurn(){
+  const ph=game.phase, a=game.activeTeam;
+  if(ph==="BUZZ"){
+    if(game.qi<3){ game.qi++; game.phase="READ"; game.message="Nadie pulsó. Siguiente pregunta: léela antes de activar los pulsadores."; }
+    else { game.phase="ENDED"; game.message="Nadie pulsó. Ronda terminada."; }
+  }else if(ph==="STEAL_BUZZ"){
+    teams[a].score+=game.pot; game.phase="ENDED"; game.message=`Nadie quiso robar: ${teamName(a)} conserva ${game.pot} pts.`;
+  }else if(ph==="ANSWER"||ph==="STEAL_ANSWER"){
+    const q=curQ(); handlePick({teamId: ph==="ANSWER"?a:game.stealTeam}, -1); return;
+  }else return;
+  broadcastState(); renderAllHost();
+}
+function continueGame(){
+  if(game.phase!=="RESULT") return;
+  const a=game.after; game.last=null; game.after=null;
+  if(a==="NEXT"){ game.qi++; game.phase="ANSWER"; startClock(); game.message="Nueva pregunta para "+teamName(game.activeTeam)+"."; }
+  else if(a==="STEAL"){ game.qi++; game.stealTeam=null; game.phase="STEAL_READ"; game.message="Lee la pregunta de robo. Aún nadie puede pulsar."; }
+  else { game.phase="ENDED"; game.message="Ronda terminada. Pasa a la siguiente."; }
+  broadcastState(); renderAllHost();
+}
+function resetGame(){
+  if(!confirm("¿Reiniciar toda la partida y poner los marcadores en 0?")) return;
+  teams.forEach(t=>{t.score=0});
+  game=freshGame();
+  broadcastState(); renderAllHost();
+}
+
+function copyRoomCode(){
+  navigator.clipboard?.writeText(roomCode).then(()=>toast("Código copiado.")).catch(()=>toast("Código: "+roomCode));
+}
+
+let pingTimer=null;
+function joinRoom(){
+  const code=cleanCode(qs("playerCode").value);
+  if(code.length!==5){ showPlayerMsg("Escribe un código de 5 caracteres."); return; }
+  if(peer) try{peer.destroy()}catch(e){}
+  showPlayerMsg("Conectando con el tablero…");
+  let opened=false;
+  peer=new Peer({debug:0,host:'0.peerjs.com',port:443,path:'/',secure:location.protocol==='https:'});
+  peer.on("open",()=>{
+    const c=playerConn=peer.connect(peerIdFor(code),{reliable:true,serialization:"json"});
+    c.on("open",()=>{
+      opened=true; showPlayerMsg("");
+      clearInterval(pingTimer);
+      pingTimer=setInterval(()=>{ try{c.send({type:"ping"})}catch(e){} },3000);
+    });
+    c.on("data",handlePlayerMessage);
+    c.on("close",()=>{ if(playerConn===c) resetPlayerUI("La conexión con el tablero se cerró. Vuelve a conectarte."); });
+    c.on("error",()=>{ if(playerConn===c) resetPlayerUI("No se pudo completar la conexión."); });
+  });
+  peer.on("error",()=>{ if(!opened) resetPlayerUI("No se pudo conectar. Revisa el código y que la sala siga abierta."); });
+}
+function handlePlayerMessage(data){
+  if(!data||typeof data!=="object") return;
+  if(data.type==="joinDenied"){ showPlayerMsg(data.reason); return; }
+  if(data.type==="joinAccepted"){
+    playerTeamId=Number(data.teamId); teams=data.teams; game=data.game; syncClock(); showPlayerMsg("");
+    qs("playerSetup").classList.add("hidden"); qs("mobileGame").classList.remove("hidden");
+    renderPlayer(); toast("Conectado como "+teamName(playerTeamId)); return;
+  }
+  if(data.type==="state"){
+    teams=data.teams; game=data.game; syncClock();
+    if(playerTeamId===null) renderTeamPicker(); else renderPlayer();
+  }
+}
+function renderTeamPicker(){
+  qs("codeStep").classList.add("hidden"); qs("teamPicker").classList.remove("hidden");
+  qs("teamPickBtns").innerHTML=teams.map(t=>`<button class="opt" ${t.connected?"disabled":""} onclick="selectTeam(${t.id})"><b>${t.id+1}</b><span>${escapeHtml(t.name)}${t.connected?" — ocupado":""}</span></button>`).join("");
+}
+function selectTeam(id){ if(playerConn&&playerConn.open) try{playerConn.send({type:"join",teamId:id})}catch(e){} }
+function resetPlayerUI(msg){
+  clearInterval(pingTimer);
+  const p=peer; peer=null; playerConn=null; playerTeamId=null;
+  if(p) try{p.destroy()}catch(e){}
+  qs("mobileGame").classList.add("hidden"); qs("playerSetup").classList.remove("hidden");
+  qs("codeStep").classList.remove("hidden"); qs("teamPicker").classList.add("hidden");
+  showPlayerMsg(msg||"");
+}
+function buzz(){
+  const allowed = game.phase==="BUZZ" || game.phase==="STEAL_BUZZ";
+  if(!allowed || !playerConn || !playerConn.open) return;
+  try{
+    playerConn.send({type:"buzz"});
+  }catch(e){}
+  qs("buzzer").disabled=true;
+}
+function pick(i){
+  if(!playerConn || !playerConn.open) return;
+  try{ playerConn.send({type:"pick",i}); }catch(e){}
+  document.querySelectorAll("#optBox .opt").forEach(b=>b.disabled=true);
+}
+function renderPlayer(){
+  const ph=game.phase, q=curQ(), me=playerTeamId, L=game.last;
+  const mine=(ph==="ANSWER"&&game.activeTeam===me)||(ph==="STEAL_ANSWER"&&game.stealTeam===me);
+  const showOpts=!!q && (mine || (ph==="RESULT" && L && L.team===me));
+  const names={FINAL:"Resultados finales",IDLE:"Esperando",READ:"Escuchen la pregunta",BUZZ:"¡PULSADORES ACTIVOS!",ANSWER:"Turno en juego",RESULT:"Resultado",STEAL_READ:"Robo: escuchen la pregunta",STEAL_BUZZ:"¡ROBO ABIERTO!",STEAL_ANSWER:"Robo en curso",ENDED:"Ronda terminada"};
+  qs("playerTeamLabel").textContent=teamName(me);
+  qs("mobilePhase").textContent=names[ph]||ph;
+  qs("mobileQuestion").textContent=(q && ph!=="IDLE" && ph!=="ENDED")?q.q:"Esperando pregunta…";
+  qs("mobilePot").textContent=game.pot;
+  qs("mobileScoreGrid").innerHTML=teams.map(t=>`<div class="ms"><b>${t.score}</b><small>${escapeHtml(t.name)}</small></div>`).join("");
+  const enabled=(ph==="BUZZ")||(ph==="STEAL_BUZZ"&&me!==game.activeTeam);
+  const b=qs("buzzer"); b.disabled=!enabled; b.classList.toggle("active",enabled);
+  qs("buzzWrap").classList.toggle("hidden",showOpts);
+  qs("optBox").classList.toggle("hidden",!showOpts);
+  if(showOpts){
+    qs("optBox").innerHTML=q.o.map((x,i)=>{
+      const cls=ph==="RESULT"?(i===q.c?"good":(i===L.pick?"bad":"")):"";
+      return `<button class="opt ${cls}" ${ph==="RESULT"?"disabled":""} onclick="pick(${i})"><b>${"ABCD"[i]}</b><span>${escapeHtml(x)}</span></button>`;
+    }).join("");
+  }
+  qs("playerState").textContent = mine?"¡Es tu turno! Elige una opción.":
+    (ph==="BUZZ")?"¡Listo para pulsar!":
+    (ph==="STEAL_BUZZ"&&me!==game.activeTeam)?"¡Puedes intentar el robo!":
+    game.activeTeam===me?"Tu equipo tiene el turno.":
+    game.activeTeam!==null?"Otro equipo tiene el turno.":"Conectado";
+  qs("playerNotice").textContent=game.message;
+  const kM=game.round+"/"+game.qi+"/"+(L?L.team+":"+L.pick:"");
+  if(ph==="RESULT"&&L&&L.team===me){ if(fxM!==kM){ fxM=kM; playFx(L,false); } } else if(ph!=="RESULT") fxM="";
+  const fin=ph==="FINAL";
+  ["mobileQuestion","mPotLine"].forEach(id=>qs(id).classList.toggle("hidden",fin));
+  if(fin){ qs("buzzWrap").classList.add("hidden"); qs("optBox").classList.add("hidden"); }
+  qs("mFinal").classList.toggle("hidden",!fin);
+  if(fin) setFinal(qs("mFinal"),finalHtml()); else qs("mFinal").dataset.sig="";
+}
+function leaveRoom(){ resetPlayerUI(""); }
+function showPlayerMsg(msg){
+  const box=qs("playerConnectMsg");
+  if(!msg){box.classList.add("hidden"); box.textContent=""; return;}
+  box.classList.remove("hidden"); box.textContent=msg;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]));
+}
+function toast(msg){
+  const t=qs("toast"); t.textContent=msg; t.classList.remove("hidden");
+  clearTimeout(window.__toastTimer); window.__toastTimer=setTimeout(()=>t.classList.add("hidden"),2300);
+}
+
+setInterval(tickBars,100);
+// Estado inicial
+renderAllHost();
+</script>
+</body>
+</html>
